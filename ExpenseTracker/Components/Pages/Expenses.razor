@@ -2,14 +2,16 @@
 @using ExpenseTracker.Models
 @using ExpenseTracker.Data
 @using Microsoft.EntityFrameworkCore
+@rendermode InteractiveServer
 
 @inject ApplicationDbContext Db
+
 
 <PageTitle>Expenses</PageTitle>
 
 <h3>Personal Expenses</h3>
 
-<EditForm Model="newExpense" OnValidSubmit="AddExpense" class="p-4 border rounded shadow-sm bg-light">
+<EditForm Model="newExpense" OnValidSubmit="AddExpense" class="p-4 border rounded shadow-sm bg-light" FormName="AddExpenseForm">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
@@ -81,7 +83,13 @@ else
 
 @code {
     private List<Expense> expenses = new();
-    private Expense newExpense = new() { Date = DateTime.Today };
+    private Expense newExpense = new()
+    {
+        Date = DateTime.Today,
+        Category = string.Empty,
+        Amount = 0m,
+        Notes = string.Empty
+    };
 
     protected override async Task OnInitializedAsync()
     {
