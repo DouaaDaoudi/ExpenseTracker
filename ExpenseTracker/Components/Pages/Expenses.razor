@@ -6,7 +6,7 @@
 @using System.Globalization
 
 @inject ApplicationDbContext Db
-
+@inject IJSRuntime JS
 
 <PageTitle>Expenses</PageTitle>
 
@@ -85,8 +85,8 @@ else
         <thead class="table-primary">
             <tr>
                 <th scope="col" style="width: 20%;">Date</th>
-                <th scope="col" style="width: 30%;">Category</th>
-                <th scope="col" style="width: 20%;">Amount</th>
+                <th scope="col" style="width: 15%;">Category</th>
+                <th scope="col" style="width: 15%;">Amount</th>
                 <th scope="col" style="width: 30%;">Notes</th>
             </tr>
         </thead>
@@ -99,7 +99,11 @@ else
                     <td>@e.Category</td>
                     <td>@e.Amount</td>
                     <td>@e.Notes</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" @onclick="() => DeleteExpense(e.Id)">Delete</button>
+                    </td>
                 </tr>
+          
             }
         </tbody>
     </table>
@@ -135,5 +139,24 @@ else
         newExpense = new() { Date = DateTime.Today };
 
         expenses = await Db.Expenses.OrderByDescending(e => e.Date).ToListAsync();
+    }
+
+    private async Task DeleteExpense(int id)
+    {
+        var confirm = await JS.InvokeAsync<bool>("confirm", "Are you sure you want to delete this expense?");
+        if (!confirm)
+        {
+            return; // user clicked Cancel
+        }
+        var expense = await Db.Expenses.FindAsync(id);
+        if (expense != null)
+        {
+            Db.Expenses.Remove(expense);
+            await Db.SaveChangesAsync();
+
+            // Update UI
+            expenses.Remove(expense);
+        }
+        
     }
 }
